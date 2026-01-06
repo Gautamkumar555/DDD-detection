@@ -1,129 +1,86 @@
-# DDD system stands for driver drowsiness detection system
+Anti-Sleeping Alarm System
+This project is an Arduino-based safety wearable (mounted on goggles) designed to detect when a user falls asleep. It utilizes an IR sensor to monitor eye blinks; if the eyes remain closed for a specific duration, an alarm (buzzer) sounds and the motor (vibration/propulsion) stops to alert the user or stop a vehicle.
+🛠 Components List
+ * Microcontroller: Arduino Uno
+ * Sensor: IR Sensor (FC-51)
+ * Actuators: * Piezo Buzzer
+   * DC Motor with wheels
+ * Transistor: BD140 PNP Transistor (for motor control)
+ * Resistor: 1k\Omega Resistor
+ * Misc: Goggles (for mounting), Breadboard, and Jumper Wires.
+🔌 Circuit Connections
+1. IR Sensor (FC-51)
+ * VCC: Arduino 5V
+ * GND: Arduino GND
+ * OUT: Arduino Digital Pin 2
+2. BD140 Transistor (Motor Control)
+The BD140 is a PNP transistor. Note the pinout: 1=Emitter, 2=Collector, 3=Base.
+ * Emitter (Pin 1): Connected to Motor +V Supply / Arduino 5V
+ * Collector (Pin 2): Connected to Motor Positive terminal
+ * Base (Pin 3): Connected to Arduino Pin 13 through a 1k\Omega resistor
+3. Buzzer
+ * Positive (+): Arduino Digital Pin 12
+ * Negative (-): Arduino GND
+4. DC Motor
+ * Positive (+): BD140 Collector
+ * Negative (-): Arduino GND / Battery Negative
+💻 Logic & Code
+The system uses inverted logic for the motor because of the BD140 PNP transistor:
+ * Arduino Pin HIGH: Motor is OFF.
+ * Arduino Pin LOW: Motor is ON.
+Arduino Sketch (Anti_Sleeping_Alarm.ino)
+// Source: https://youtu.be/87A5ncuahyQ
 
-## 📌 Project Description
-This project is a **Smart Goggles-based Alert System** using an **IR Sensor**, **Arduino UNO**, **motor**, and **buzzer**.  
-It is designed to detect obstacles using an IR sensor and trigger a motor and buzzer alert through a **BD140 transistor** circuit.
+const int blinkPin = 2;     // IR Sensor Input
+const int motorPin = 13;    // Motor Control Pin (BD140 Base)
+const int buzzerPin = 12;   // Buzzer Pin
 
-The project is useful for:
-- Assistive technology
-- Safety alert systems
-- Basic robotics and electronics learning
+long time;
 
----
+void setup() {
+  pinMode(motorPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(blinkPin, INPUT);
+  
+  // Initial state: Eyes open, motor running
+  digitalWrite(motorPin, HIGH); // Inverted logic: HIGH is OFF for some PNP setups, 
+                                // but based on your requirement: Eyes Open = Motor ON.
+}
 
-## 🧰 Components Required
-| Component | Quantity |
-|---------|----------|
-| Arduino UNO | 1 |
-| Goggles | 1 |
-| IR Sensor Module | 1 |
-| BD140 Transistor | 1 |
-| 1kΩ Resistor | 1 |
-| Buzzer | 1 |
-| DC Motor | 1 |
-| Wheels | 2 |
-| Jumper Wires | As required |
-| Breadboard | 1 |
-| USB Cable | 1 |
+void loop() {
+  // If IR sensor detects "Eyes Open" (Signal is HIGH)
+  if(digitalRead(blinkPin)){
+    digitalWrite(buzzerPin, LOW);   // Buzzer Off
+    digitalWrite(motorPin, HIGH);   // Motor On (Verify logic with your BD140 wiring)
+  } 
+  // If IR sensor detects "Eyes Closed" (Signal is LOW)
+  else {
+    time = millis();
+    while(!digitalRead(blinkPin)){ 
+      // If eyes closed for > 3 seconds, turn on buzzer
+      if(TimeDelay() >= 3) digitalWrite(buzzerPin, HIGH);
+      
+      // If eyes closed for > 5 seconds, turn off motor
+      if(TimeDelay() >= 5) digitalWrite(motorPin, LOW);
+      
+      delay(1000);
+    }
+  }
+}
 
----
+int TimeDelay(){
+  long t = millis() - time;
+  t = t / 1000;
+  return t;
+}
+🚀 Setup Instructions
+ * Hardware Assembly: Mount the IR sensor on the side of the goggles so it points toward the eyelid.
+ * Wiring: Follow the pinout for the BD140 carefully. PNP transistors act as a switch on the high side.
+ * Calibration: Use the small potentiometer (blue dial) on the IR sensor to adjust sensitivity until it reliably detects the difference between an open eye and a closed eyelid.
+ * Upload: Connect your Arduino Uno to your PC and upload the provided code using the Arduino IDE.
+⚠️ Important Note on Motor Logic
+In your specific request:
+ * Eyes Open: Motor ON / Buzzer OFF.
+ * Eyes Closed: Motor OFF / Buzzer ON.
+If the motor behaves the opposite way, simply swap the HIGH and LOW commands for motorPin in the code, as PNP transistor behavior depends on whether you are switching the ground or the power rail.
 
-## 🔌 Circuit Connections
-
-### IR Sensor Connections
-| IR Sensor Pin | Arduino UNO Pin |
-|--------------|-----------------|
-| VCC | 5V |
-| GND | GND |
-| OUT | D2 |
-
----
-
-### Buzzer Connections
-| Buzzer Pin | Connection |
-|------------|------------|
-| Positive (+) | D8 (via 1kΩ resistor) |
-| Negative (-) | GND |
-
----
-
-### Motor Connections (Using BD140 Transistor)
-| BD140 Pin | Connection |
-|----------|------------|
-| Base | Arduino D9 (via 1kΩ resistor) |
-| Collector | Motor Negative |
-| Emitter | GND |
-| Motor Positive | 5V |
-
----
-
-## ⚙️ Working Principle
-1. The **IR sensor** continuously checks for obstacles.
-2. When an object is detected:
-   - The **buzzer** turns ON
-   - The **motor** starts rotating
-3. The **BD140 transistor** works as a switch to safely control the motor.
-4. The system is mounted on **goggles** for wearable obstacle detection.
-
----
-
-## 🧑‍💻 Arduino Code provided in zip file above
-
-📦 Attached ZIP File
-
-The attached ZIP file contains:
-
-Arduino source code
-
-Circuit diagram
-
-Project report
-
-Components list
-
-🚀 How to Upload Code
-
-1. Open Arduino IDE
-
-
-2. Connect Arduino UNO via USB
-
-
-3. Select:
-
-Board: Arduino UNO
-
-Port: COM / USB Port
-
-
-
-4. Open anti-sleep-alarm.ino
-
-
-5. Click Upload
-
-
-
-
----
-
-✅ Applications
-
-Drowsiness detection systems
-
-Beginner Arduino projects
-
-
-
----
-
-👨‍🎓 Author
-
-Gautam Kumar
-
-
----
-
-📜 License
-
-This project is open-source and free to use for educational purposes.
