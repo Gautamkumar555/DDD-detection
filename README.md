@@ -1,3 +1,5 @@
+⚠️dont use code below use code from zip file uploaded here⚠️
+
 Anti-Sleeping Alarm System
 This project is an Arduino-based safety wearable (mounted on goggles) designed to detect when a user falls asleep. It utilizes an IR sensor to monitor eye blinks; if the eyes remain closed for a specific duration, an alarm (buzzer) sounds and the motor (vibration/propulsion) stops to alert the user or stop a vehicle.
 🛠 Components List
